@@ -37,6 +37,16 @@ pip install -e ".[dev]"       # pulls datasets/pyarrow/pandas for Phase 1
 cp .env.example .env        # optional; then edit secrets; keys mirror pydantic defaults where set
 ```
 
+**Prefetch / extract dataset (Hugging Face → parquet cache)**
+
+With **`SKIP_DATASET_LOAD=false`** in `.env`, the API loads data on startup. To **pull and cache data once** (same Phase 1 pipeline), from the **repo root**:
+
+```bash
+python3 scripts/prefetch_zomato_dataset.py
+```
+
+This script **always** loads (it ignores `SKIP_DATASET_LOAD` for that run). Ensure `HF_DATASET` / `DATA_CACHE_PATH` in `.env` match what you want; first download needs network access.
+
 **Run the API**
 
 ```bash
