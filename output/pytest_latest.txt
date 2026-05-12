@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Users/dheerajj/Desktop/zomatoMS1/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/dheerajj/Desktop/zomatoMS1
+configfile: pyproject.toml
+testpaths: tests, phase1/tests, phase2/tests, phase3/tests, phase4/tests
+plugins: anyio-4.12.1
+collecting ... collected 36 items
+
+tests/test_phase0.py::test_health PASSED                                 [  2%]
+tests/test_phase0.py::test_recommendations_stub_shape PASSED             [  5%]
+tests/test_phase0.py::test_recommendations_limit_enforced PASSED         [  8%]
+tests/test_phase0.py::test_openapi_contains_schemas PASSED               [ 11%]
+phase1/tests/test_access.py::test_get_by_ids_preserves_order PASSED      [ 13%]
+phase1/tests/test_normalize.py::test_parse_rate_slash_form PASSED        [ 16%]
+phase1/tests/test_normalize.py::test_parse_rate_rejects_new PASSED       [ 19%]
+phase1/tests/test_normalize.py::test_parse_approx_cost_digits PASSED     [ 22%]
+phase1/tests/test_normalize.py::test_cost_to_band PASSED                 [ 25%]
+phase1/tests/test_normalize.py::test_split_cuisines PASSED               [ 27%]
+phase1/tests/test_normalize.py::test_stable_restaurant_id_is_deterministic PASSED [ 30%]
+phase1/tests/test_pipeline_offline.py::test_load_restaurants_offline PASSED [ 33%]
+phase1/tests/test_pipeline_offline.py::test_load_restaurants_raises_on_empty PASSED [ 36%]
+phase1/tests/test_transform.py::test_normalize_row_keeps_valid_row PASSED [ 38%]
+phase1/tests/test_transform.py::test_normalize_row_drops_bad_rating PASSED [ 41%]
+phase1/tests/test_transform.py::test_normalize_rows_counts_drops PASSED  [ 44%]
+phase2/tests/test_validate.py::test_budget_synonyms PASSED               [ 47%]
+phase2/tests/test_validate.py::test_numeric_budget_rupees PASSED         [ 50%]
+phase2/tests/test_validate.py::test_city_alias_bengaluru PASSED          [ 52%]
+phase2/tests/test_validate.py::test_city_alias_delji_to_delhi PASSED     [ 55%]
+phase2/tests/test_validate.py::test_min_rating_above_dataset_max_rejected PASSED [ 58%]
+phase2/tests/test_validate.py::test_unknown_budget PASSED                [ 61%]
+phase2/tests/test_validate.py::test_unknown_location_with_catalog PASSED [ 63%]
+phase2/tests/test_validate.py::test_limit_over_max PASSED                [ 66%]
+phase2/tests/test_validate.py::test_notes_truncation PASSED              [ 69%]
+phase3/tests/test_engine.py::test_filter_matches_basic PASSED            [ 72%]
+phase3/tests/test_engine.py::test_rating_threshold PASSED                [ 75%]
+phase3/tests/test_engine.py::test_budget_mismatch_drops PASSED           [ 77%]
+phase3/tests/test_engine.py::test_cuisine_or_semantics PASSED            [ 80%]
+phase3/tests/test_engine.py::test_cap_f2 PASSED                          [ 83%]
+phase3/tests/test_engine.py::test_stable_tiebreak_f5 PASSED              [ 86%]
+phase3/tests/test_engine.py::test_location_address_substring PASSED      [ 88%]
+phase4/tests/test_ranker.py::test_no_api_key_skips_network_and_is_not_degraded PASSED [ 91%]
+phase4/tests/test_ranker.py::test_groq_reorders_via_mock PASSED          [ 94%]
+phase4/tests/test_ranker.py::test_grounding_drops_unknown_ids PASSED     [ 97%]
+phase4/tests/test_ranker.py::test_invalid_json_sets_degraded PASSED      [100%]
+
+============================== 36 passed in 0.25s ==============================

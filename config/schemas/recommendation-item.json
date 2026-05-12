@@ -1,0 +1,58 @@
+{
+  "description": "Single result row (facts + optional explanation).",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "rank": {
+      "minimum": 1,
+      "title": "Rank",
+      "type": "integer"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "city": {
+      "title": "City",
+      "type": "string"
+    },
+    "cuisines": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Cuisines",
+      "type": "array"
+    },
+    "rating": {
+      "title": "Rating",
+      "type": "number"
+    },
+    "cost_band": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Cost Band",
+      "type": "string"
+    },
+    "explanation": {
+      "title": "Explanation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "rank",
+    "name",
+    "city",
+    "cuisines",
+    "rating",
+    "cost_band",
+    "explanation"
+  ],
+  "title": "RecommendationItem",
+  "type": "object"
+}

@@ -1,0 +1,144 @@
+{
+  "$defs": {
+    "RecommendationItem": {
+      "description": "Single result row (facts + optional explanation).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "city": {
+          "title": "City",
+          "type": "string"
+        },
+        "cuisines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cuisines",
+          "type": "array"
+        },
+        "rating": {
+          "title": "Rating",
+          "type": "number"
+        },
+        "cost_band": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Cost Band",
+          "type": "string"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "rank",
+        "name",
+        "city",
+        "cuisines",
+        "rating",
+        "cost_band",
+        "explanation"
+      ],
+      "title": "RecommendationItem",
+      "type": "object"
+    }
+  },
+  "description": "POST /v1/recommendations response envelope (architecture \u00a76).",
+  "properties": {
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "match_count": {
+      "minimum": 0,
+      "title": "Match Count",
+      "type": "integer"
+    },
+    "capped_to": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "If match_count exceeded internal cap before LLM, this is the cap applied.",
+      "title": "Capped To"
+    },
+    "sent_to_llm": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Rows included in the LLM payload for this request (Phase 4+).",
+      "title": "Sent To Llm"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/RecommendationItem"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "degraded": {
+      "default": false,
+      "title": "Degraded",
+      "type": "boolean"
+    },
+    "experience": {
+      "anyOf": [
+        {
+          "enum": [
+            "ok",
+            "empty",
+            "degraded"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Phase 5 coarse UI state: ok | empty | degraded (architecture \u00a714.2).",
+      "title": "Experience"
+    },
+    "messages": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Messages",
+      "type": "array"
+    }
+  },
+  "required": [
+    "request_id",
+    "match_count",
+    "results"
+  ],
+  "title": "RecommendationResponse",
+  "type": "object"
+}

@@ -1,0 +1,60 @@
+{
+  "description": "Wire format for ``POST /v1/recommendations`` (flexible ``budget`` string).",
+  "properties": {
+    "location": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Location",
+      "type": "string"
+    },
+    "budget": {
+      "maxLength": 40,
+      "minLength": 1,
+      "title": "Budget",
+      "type": "string"
+    },
+    "cuisines": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "minItems": 1,
+      "title": "Cuisines",
+      "type": "array"
+    },
+    "min_rating": {
+      "maximum": 5,
+      "minimum": 0,
+      "title": "Min Rating",
+      "type": "number"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "maxLength": 8000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "limit": {
+      "default": 5,
+      "maximum": 500,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "location",
+    "budget",
+    "cuisines",
+    "min_rating"
+  ],
+  "title": "RawRecommendationRequest",
+  "type": "object"
+}

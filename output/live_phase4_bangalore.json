@@ -1,0 +1,109 @@
+{
+  "request": {
+    "location": "Bangalore",
+    "budget": "1500",
+    "cuisines": [
+      "North Indian",
+      "Indian",
+      "Chinese",
+      "Fast Food",
+      "Cafe"
+    ],
+    "min_rating": 4.0,
+    "limit": 5,
+    "notes": null
+  },
+  "location_used": "Bangalore",
+  "status_code": 200,
+  "groq_configured": true,
+  "response": {
+    "request_id": "abfbe624-da0f-4764-be9d-e076de786633",
+    "match_count": 1664,
+    "capped_to": 25,
+    "sent_to_llm": 25,
+    "results": [
+      {
+        "id": "r_084857a3d148b30ff0e4b4a0",
+        "rank": 1,
+        "name": "Byg Brewski Brewing Company",
+        "city": "Bellandur",
+        "cuisines": [
+          "continental",
+          "north indian",
+          "italian",
+          "south indian",
+          "finger food"
+        ],
+        "rating": 4.9,
+        "cost_band": "high",
+        "explanation": "Matches your filters: high budget, rating 4.9, cuisines include continental, north indian, italian."
+      },
+      {
+        "id": "r_084857a3d148b30ff0e4b4a0",
+        "rank": 2,
+        "name": "Byg Brewski Brewing Company",
+        "city": "Bellandur",
+        "cuisines": [
+          "continental",
+          "north indian",
+          "italian",
+          "south indian",
+          "finger food"
+        ],
+        "rating": 4.9,
+        "cost_band": "high",
+        "explanation": "Matches your filters: high budget, rating 4.9, cuisines include continental, north indian, italian."
+      },
+      {
+        "id": "r_084857a3d148b30ff0e4b4a0",
+        "rank": 3,
+        "name": "Byg Brewski Brewing Company",
+        "city": "Bellandur",
+        "cuisines": [
+          "continental",
+          "north indian",
+          "italian",
+          "south indian",
+          "finger food"
+        ],
+        "rating": 4.9,
+        "cost_band": "high",
+        "explanation": "Matches your filters: high budget, rating 4.9, cuisines include continental, north indian, italian."
+      },
+      {
+        "id": "r_094047e8e41db05295bd00b6",
+        "rank": 4,
+        "name": "Asia Kitchen By Mainland China",
+        "city": "Koramangala 7th Block",
+        "cuisines": [
+          "asian",
+          "chinese",
+          "thai",
+          "momos"
+        ],
+        "rating": 4.9,
+        "cost_band": "high",
+        "explanation": "Matches your filters: high budget, rating 4.9, cuisines include asian, chinese, thai."
+      },
+      {
+        "id": "r_094047e8e41db05295bd00b6",
+        "rank": 5,
+        "name": "Asia Kitchen By Mainland China",
+        "city": "Koramangala 7th Block",
+        "cuisines": [
+          "asian",
+          "chinese",
+          "thai",
+          "momos"
+        ],
+        "rating": 4.9,
+        "cost_band": "high",
+        "explanation": "Matches your filters: high budget, rating 4.9, cuisines include asian, chinese, thai."
+      }
+    ],
+    "degraded": true,
+    "messages": [
+      "match_count=1664, capped_to=25, returned=5, filter_ms=24.93, llm_ms=341.45, llm_retry_count=2, prompt_template_version='v0', groq_model='llama-3.1-8b-instant'."
+    ]
+  }
+}

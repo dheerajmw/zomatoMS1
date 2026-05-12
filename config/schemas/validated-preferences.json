@@ -1,0 +1,59 @@
+{
+  "description": "Canonical, Phase-2\u2013validated preferences for filtering (Phase 3+).",
+  "properties": {
+    "location_display": {
+      "title": "Location Display",
+      "type": "string"
+    },
+    "location_normalized": {
+      "title": "Location Normalized",
+      "type": "string"
+    },
+    "budget_band": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Budget Band",
+      "type": "string"
+    },
+    "cuisines": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Cuisines",
+      "type": "array"
+    },
+    "min_rating": {
+      "title": "Min Rating",
+      "type": "number"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Notes"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "location_display",
+    "location_normalized",
+    "budget_band",
+    "cuisines",
+    "min_rating",
+    "notes",
+    "limit"
+  ],
+  "title": "ValidatedPreferences",
+  "type": "object"
+}

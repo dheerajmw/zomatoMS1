@@ -1,0 +1,33 @@
+{
+  "request": {
+    "location": "delji",
+    "budget": "1500",
+    "cuisines": [
+      "North Indian",
+      "Indian",
+      "Chinese",
+      "Fast Food",
+      "Cafe"
+    ],
+    "min_rating": 4.0,
+    "limit": 5,
+    "notes": null
+  },
+  "location_used": "delji",
+  "status_code": 200,
+  "groq_configured": false,
+  "response": {
+    "request_id": "c90791ca-1510-4dd5-93ca-0a27001b74ad",
+    "match_count": 0,
+    "capped_to": null,
+    "sent_to_llm": 0,
+    "results": [],
+    "degraded": false,
+    "messages": [
+      "No restaurants matched all filters (edge case F1).",
+      "Try lowering min_rating, broadening location, or choosing different cuisines.",
+      "filter_ms=22.91",
+      "prefs: location='delji', budget=high, cuisines=['north indian', 'indian', 'chinese', 'fast food', 'cafe'], min_rating>=4.0"
+    ]
+  }
+}

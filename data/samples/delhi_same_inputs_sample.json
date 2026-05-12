@@ -1,0 +1,95 @@
+{
+  "description": "Same inputs as the live demo (budget 1500, min_rating 4.0, limit 5, broad cuisines). Location uses the common typo delji → normalized delhi. The synthetic top-5 block is for UI/docs only; the bundled HF snapshot is metro-heavy (often no Delhi rows), so POST /v1/recommendations may return match_count=0 for Delhi.",
+  "request": {
+    "location": "delji",
+    "budget": "1500",
+    "cuisines": [
+      "North Indian",
+      "Indian",
+      "Chinese",
+      "Fast Food",
+      "Cafe"
+    ],
+    "min_rating": 4.0,
+    "limit": 5
+  },
+  "synthetic_top5_response": {
+    "request_id": "00000000-0000-4000-8000-000000000001",
+    "match_count": 5,
+    "capped_to": 5,
+    "sent_to_llm": 5,
+    "results": [
+      {
+        "id": "r_delhi_demo_01",
+        "rank": 1,
+        "name": "Indian Accent",
+        "city": "New Delhi",
+        "cuisines": [
+          "north indian",
+          "modern indian"
+        ],
+        "rating": 4.6,
+        "cost_band": "high",
+        "explanation": "Strong North Indian match, rated above your 4.0 floor, fits a ~₹1500-for-two style high band."
+      },
+      {
+        "id": "r_delhi_demo_02",
+        "rank": 2,
+        "name": "Varq",
+        "city": "New Delhi",
+        "cuisines": [
+          "indian",
+          "continental"
+        ],
+        "rating": 4.5,
+        "cost_band": "high",
+        "explanation": "Indian-forward menu with continental touches; budget band aligns with high spend."
+      },
+      {
+        "id": "r_delhi_demo_03",
+        "rank": 3,
+        "name": "Bukhara",
+        "city": "New Delhi",
+        "cuisines": [
+          "north indian",
+          "mughlai"
+        ],
+        "rating": 4.7,
+        "cost_band": "high",
+        "explanation": "Classic North Indian / Mughlai; rating comfortably clears 4.0."
+      },
+      {
+        "id": "r_delhi_demo_04",
+        "rank": 4,
+        "name": "Diggin",
+        "city": "New Delhi",
+        "cuisines": [
+          "cafe",
+          "italian",
+          "fast food"
+        ],
+        "rating": 4.2,
+        "cost_band": "high",
+        "explanation": "Cafe + fast casual options; good fit for cafe/fast-food tokens in your list."
+      },
+      {
+        "id": "r_delhi_demo_05",
+        "rank": 5,
+        "name": "Wanchai by Kylin",
+        "city": "New Delhi",
+        "cuisines": [
+          "chinese",
+          "asian"
+        ],
+        "rating": 4.3,
+        "cost_band": "high",
+        "explanation": "Chinese / Asian focus; satisfies your Chinese cuisine token with solid ratings."
+      }
+    ],
+    "degraded": false,
+    "messages": [
+      "synthetic=true — replace with live POST /v1/recommendations when your store includes Delhi NCR rows."
+    ]
+  },
+  "live_api_output_reference": "See data/samples/delhi_phase4_live_empty.json for a real run against the current cached dataset (often F1 empty for Delhi)."
+}
