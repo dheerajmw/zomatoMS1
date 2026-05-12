@@ -1,0 +1,21 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# New Web Service → connect this repo → optionally "Apply" from this file, or mirror settings manually.
+
+services:
+  - type: web
+    name: zomato-recommender-api
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install --no-cache-dir .
+    startCommand: uvicorn recommender.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.8"
+      - key: SKIP_DATASET_LOAD
+        value: "true"
+      # Set in the Render dashboard (Environment) as a secret — do not commit real keys.
+      - key: GROQ_API_KEY
+        sync: false
