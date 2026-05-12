@@ -13,7 +13,11 @@ SESSION_API_OVERRIDE = "api_base_url_override"
 
 
 def _likely_streamlit_cloud() -> bool:
-    """Guess Streamlit Community Cloud / hosted runtime (not your laptop)."""
+    """Detect Streamlit Community Cloud / hosted app (not `streamlit run` on your laptop)."""
+    markers = ("streamlit.app", "share.streamlit.io", "headless-sg.streamlit.io")
+    for val in os.environ.values():
+        if isinstance(val, str) and any(m in val.lower() for m in markers):
+            return True
     base = (os.environ.get("STREAMLIT_SERVER_BASE_URL") or "").lower()
     if "streamlit.app" in base:
         return True
@@ -30,7 +34,7 @@ def _likely_streamlit_cloud() -> bool:
 def _normalize_api_base(raw: str) -> str:
     u = (raw or "").strip().rstrip("/")
     if not u:
-        return "http://127.0.0.1:8000"
+        return ""
     if u.startswith(("http://", "https://")):
         return u
     low = u.lower()
@@ -40,7 +44,7 @@ def _normalize_api_base(raw: str) -> str:
 
 
 def _api_base() -> tuple[str, str]:
-    """Return (normalized URL, human-readable source)."""
+    """Return (normalized URL, human-readable source). Empty URL means not configured."""
     override = ""
     if SESSION_API_OVERRIDE in st.session_state:
         override = str(st.session_state[SESSION_API_OVERRIDE] or "").strip()
@@ -61,10 +65,16 @@ def _api_base() -> tuple[str, str]:
     if env:
         return _normalize_api_base(env), "environment variable API_BASE_URL"
 
-    return _normalize_api_base("http://127.0.0.1:8000"), "default (local — does not work on Streamlit Cloud)"
+    # Hosted Streamlit must never default to loopback (ConnectError).
+    if _likely_streamlit_cloud():
+        return "", "not configured — add API_BASE_URL in Secrets or use the sidebar"
+
+    return "http://127.0.0.1:8000", "default (local `streamlit run` + uvicorn on this machine)"
 
 
 def _host_is_loopback(url: str) -> bool:
+    if not (url or "").strip():
+        return False
     try:
         host = (urlparse(url).hostname or "").lower()
     except Exception:
@@ -81,30 +91,55 @@ def _connection_help_markdown(effective: str, source: str) -> str:
         "**Could not reach the API** (`httpx.ConnectError`). Common causes:",
         "",
         "1. **Streamlit Cloud cannot call `localhost` / `127.0.0.1`.** "
-        "That address is the Cloud machine itself, not your computer. "
+        "That address is the Cloud container, not your laptop. "
         "Deploy FastAPI to a **public HTTPS** host, then either:",
-        f"   - set **`API_BASE_URL`** in **☰ → Settings → Secrets** (recommended), **or**",
-        "   - paste the same URL into **“API base URL override”** in the sidebar (saved only for this browser session).",
+        "   - set **`API_BASE_URL`** in **☰ → Settings → Secrets** (recommended), **or**",
+        "   - paste the same URL into **“API base URL override”** in the sidebar (this session only).",
         "",
         "2. **Use a full URL** — e.g. `https://your-service.onrender.com` (no trailing slash). "
         "If you omit `https://`, this app adds it for non-local hosts.",
         "",
-        "3. **Confirm the API is up** — open `{}/health` in a new browser tab.".format(effective.rstrip("/")),
-        "",
-        f"**Effective base URL:** `{effective}`",
-        f"**Source:** {source}",
     ]
-    if cloud and loop:
+
+    if not effective.strip():
+        lines.append(
+            "3. **Configure a base URL first.** After you set a public API, open **`https://your-api.example.com/health`** "
+            "in your browser (use your real host — not `127.0.0.1` unless the API runs on the same PC as the browser)."
+        )
+    elif cloud and loop:
+        lines.append(
+            "3. **Do not** use `http://127.0.0.1/health` to verify from Streamlit Cloud — that only checks your own computer. "
+            "Open **`https://<your-deployed-host>/health`** (the same host you put in Secrets / sidebar)."
+        )
+    elif loop:
+        lines.append(
+            "3. With the API on **this machine**, open `{}` in a browser on the same machine.".format(
+                effective.rstrip("/") + "/health"
+            )
+        )
+    else:
+        lines.append("3. Open **`{}/health`** in a browser to verify the API is up.".format(effective.rstrip("/")))
+
+    lines.extend(
+        [
+            "",
+            f"**Effective base URL:** `{effective or '(not set)'}`",
+            f"**Source:** {source}",
+        ]
+    )
+    if cloud and (loop or not effective.strip()):
         lines.insert(
             0,
-            ":red[**Hosted Streamlit + loopback API URL** — requests will fail until you use a public API URL (Secrets or sidebar).]\n\n---\n\n",
+            ":red[**Hosted app:** configure a **public** API base URL — `127.0.0.1` will not work from Streamlit Cloud.]\n\n---\n\n",
         )
     return "\n".join(lines)
 
 
 def _post_recommendations(payload: dict[str, Any]) -> tuple[int, Any]:
     base, _src = _api_base()
-    url = f"{base}/v1/recommendations"
+    if not base.strip():
+        return -1, {"_error": "no_url"}
+    url = f"{base.rstrip('/')}/v1/recommendations"
     try:
         with httpx.Client(timeout=120.0, follow_redirects=True) as client:
             r = client.post(url, json=payload, headers={"Accept": "application/json"})
@@ -140,17 +175,15 @@ with st.sidebar:
     )
     effective_base, source_label = _api_base()
     st.caption("**Resolved base**")
-    st.code(effective_base, language="text")
+    st.code(effective_base or "(not set — add URL below or in Secrets)", language="text")
     st.caption(f"Source: {source_label}")
     if _likely_streamlit_cloud():
         st.info(
-            "On **Streamlit Cloud**: **☰ → Settings → Secrets** → add:\n\n"
-            "```toml\nAPI_BASE_URL = \"https://your-deployed-api.example.com\"\n```\n\n"
-            "Then **Save** and **Reboot app**."
+            "**Streamlit Cloud:** ☰ → **Settings** → **Secrets** → add `API_BASE_URL = \"https://…\"` → **Save** → **Reboot app**."
         )
 
 effective_base, source_label = _api_base()
-if _likely_streamlit_cloud() and _host_is_loopback(effective_base):
+if _likely_streamlit_cloud() and (not effective_base.strip() or _host_is_loopback(effective_base)):
     st.warning(_connection_help_markdown(effective_base, source_label))
 
 st.title("Restaurant recommender")
@@ -195,6 +228,13 @@ if submitted:
             kind = isinstance(body, dict) and body.get("_error")
             if kind == "timeout":
                 st.error("The API did not respond in time. Try again or increase server capacity.")
+            elif kind == "no_url":
+                eff, src = _api_base()
+                st.error(
+                    "**No API base URL configured.** On Streamlit Cloud, set **`API_BASE_URL`** in Secrets "
+                    "or paste your public `https://…` URL in the sidebar, then try again."
+                )
+                st.markdown(_connection_help_markdown(eff, src))
             else:
                 eff, src = _api_base()
                 st.markdown(_connection_help_markdown(eff, src))
