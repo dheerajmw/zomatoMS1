@@ -28,6 +28,14 @@ API_BASE_URL = "https://your-public-api.example.com"
 
 The API must be reachable from Streamlit’s servers (public HTTPS URL, or tunnel). **CORS** does not apply to server-side `httpx`; configure the API for browser clients separately.
 
+### `httpx.ConnectError` on Cloud
+
+Streamlit runs in the **cloud**, not on your PC. **`http://127.0.0.1:8000` or `localhost` will always fail** there: that address is the container itself, not your FastAPI process.
+
+**Fix:** deploy FastAPI (Railway, Render, Fly.io, Google Cloud Run, etc.), then set **`API_BASE_URL`** to that **`https://…`** base URL (no trailing slash). Confirm `GET {API_BASE_URL}/health` works in an incognito browser.
+
+The app now detects loopback URLs on Cloud and shows this guidance instead of a redacted stack trace.
+
 ## Example local secrets (do not commit)
 
 ```toml

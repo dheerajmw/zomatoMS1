@@ -4,25 +4,99 @@ from __future__ import annotations
 
 import os
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 import streamlit as st
 
 
+def _likely_streamlit_cloud() -> bool:
+    """Heuristic: Community Cloud sets a public app URL on the server."""
+    base = (os.environ.get("STREAMLIT_SERVER_BASE_URL") or "").lower()
+    if "streamlit.app" in base:
+        return True
+    if os.environ.get("STREAMLIT_COMMUNITY_CLOUD", "").lower() in ("1", "true", "yes"):
+        return True
+    if os.environ.get("STREAMLIT_CLOUD", "").lower() in ("1", "true", "yes"):
+        return True
+    return False
+
+
+def _normalize_api_base(raw: str) -> str:
+    u = (raw or "").strip().rstrip("/")
+    if not u:
+        return "http://127.0.0.1:8000"
+    if u.startswith(("http://", "https://")):
+        return u
+    low = u.lower()
+    if low.startswith("localhost") or low.startswith("127.") or low.startswith("0.0.0.0") or low.startswith("[::1]"):
+        return "http://" + u
+    return "https://" + u
+
+
 def _api_base() -> str:
+    raw = ""
     try:
         v = st.secrets.get("API_BASE_URL")
         if v:
-            return str(v).strip().rstrip("/")
+            raw = str(v).strip()
     except Exception:
         pass
-    return os.environ.get("API_BASE_URL", "http://127.0.0.1:8000").strip().rstrip("/")
+    if not raw:
+        raw = os.environ.get("API_BASE_URL", "").strip()
+    if not raw:
+        raw = "http://127.0.0.1:8000"
+    return _normalize_api_base(raw)
+
+
+def _host_is_loopback(url: str) -> bool:
+    try:
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        return True
+    if not host:
+        return True
+    return host in ("localhost", "127.0.0.1", "0.0.0.0", "::1")
+
+
+def _connection_help_markdown(api_display: str) -> str:
+    cloud = _likely_streamlit_cloud()
+    loop = _host_is_loopback(api_display)
+    lines = [
+        "**Could not reach the API** (`httpx.ConnectError`). Common causes:",
+        "",
+        "1. **Streamlit Cloud cannot use `localhost` / `127.0.0.1`.** "
+        "Those addresses refer to the Cloud container, not your laptop. "
+        "Deploy FastAPI to a **public HTTPS URL** (Railway, Render, Fly.io, Cloud Run, etc.) and set **`API_BASE_URL`** in **App settings → Secrets** to that base URL (no trailing slash).",
+        "",
+        "2. **Wrong or missing URL** — include scheme: `https://your-api.example.com` "
+        "(this app adds `https://` if you omit the scheme for non-local hosts).",
+        "",
+        "3. **API not listening / firewall** — open `/health` on the same base URL in a browser to confirm.",
+        "",
+        f"**Current base (from secrets/env):** `{api_display}`",
+    ]
+    if cloud and loop:
+        lines.insert(
+            0,
+            ":red[**You are on Streamlit Community Cloud with a loopback API URL.**] "
+            "Set `API_BASE_URL` in Secrets to your **deployed** API.\n\n---\n\n",
+        )
+    return "\n".join(lines)
 
 
 def _post_recommendations(payload: dict[str, Any]) -> tuple[int, Any]:
-    url = f"{_api_base()}/v1/recommendations"
-    with httpx.Client(timeout=120.0) as client:
-        r = client.post(url, json=payload, headers={"Accept": "application/json"})
+    base = _api_base()
+    url = f"{base}/v1/recommendations"
+    try:
+        with httpx.Client(timeout=120.0, follow_redirects=True) as client:
+            r = client.post(url, json=payload, headers={"Accept": "application/json"})
+    except httpx.ConnectError:
+        return -1, {"_error": "connect"}
+    except httpx.TimeoutException:
+        return -1, {"_error": "timeout"}
+    except httpx.RequestError:
+        return -1, {"_error": "request"}
     try:
         body = r.json()
     except Exception:
@@ -37,6 +111,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+api_base_display = _api_base()
+if _likely_streamlit_cloud() and _host_is_loopback(api_base_display):
+    st.error(_connection_help_markdown(api_base_display))
+    st.stop()
+
 st.title("Restaurant recommender")
 st.caption(
     "Calls your FastAPI service at `POST /v1/recommendations`. "
@@ -44,12 +123,12 @@ st.caption(
 )
 
 with st.sidebar:
-    st.markdown("**API**")
-    st.code(_api_base(), language="text")
-    st.markdown(
-        "Streamlit Cloud: add `API_BASE_URL` in **App settings → Secrets** "
-        "(public URL of your API, no trailing slash)."
-    )
+    st.markdown("**API base**")
+    st.code(api_base_display, language="text")
+    if _likely_streamlit_cloud():
+        st.warning("Cloud: use a **public** `https://…` API URL in Secrets, not localhost.")
+    else:
+        st.caption("Local default: `http://127.0.0.1:8000` — run Uvicorn from the repo root.")
 
 with st.form("prefs", clear_on_submit=False):
     c1, c2 = st.columns(2)
@@ -83,7 +162,13 @@ if submitted:
         with st.spinner("Calling API…"):
             status, body = _post_recommendations(payload)
 
-        if status == 200 and isinstance(body, dict):
+        if status == -1:
+            kind = isinstance(body, dict) and body.get("_error")
+            if kind == "timeout":
+                st.error("The API did not respond in time. Try again or increase server capacity.")
+            else:
+                st.markdown(_connection_help_markdown(_api_base()))
+        elif status == 200 and isinstance(body, dict):
             rid = body.get("request_id", "—")
             st.session_state["last_request_id"] = rid
             st.success(f"Request **{rid}**")
