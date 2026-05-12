@@ -1,49 +1,23 @@
 # Streamlit app (Phase 7)
 
-Thin UI that calls **`POST {API_BASE_URL}/v1/recommendations`** on your FastAPI service (same contract as `frontend/`).
+Calls **`POST {API_BASE_URL}/v1/recommendations`** on your FastAPI service (same JSON contract as `frontend/`).
 
-## Local
+## Local (default)
 
-1. Start the API from the repo root (see root `README.md`).
-2. Install deps: `pip install -r requirements-streamlit.txt` (or `pip install -r streamlit_app/requirements.txt`).
-3. From repo root:
+1. From the repo root, start the API (see root `README.md`).
+2. Install: `pip install -r requirements-streamlit.txt`
+3. Run:
 
 ```bash
-export API_BASE_URL=http://127.0.0.1:8000   # optional if this is the default
 streamlit run streamlit_app/app.py
 ```
 
-Or use **Streamlit secrets** instead of env: create `.streamlit/secrets.toml` locally (gitignored pattern — use the template below).
+The app defaults to **`http://127.0.0.1:8000`**. Optional: set `API_BASE_URL` in the shell, or add `API_BASE_URL` in `.streamlit/secrets.toml` (see `secrets.toml.example`). You can also override the base URL in the sidebar for this session.
 
-## Streamlit Community Cloud
-
-1. Connect [https://github.com/dheerajmw/zomatoMS1](https://github.com/dheerajmw/zomatoMS1) (or your fork).
-2. **Main file:** `streamlit_app/app.py`
-3. **Requirements file:** `streamlit_app/requirements.txt` (or `requirements-streamlit.txt` at repo root — set in app advanced settings if needed).
-4. **Secrets** (App settings → Secrets), TOML:
-
-```toml
-API_BASE_URL = "https://your-public-api.example.com"
-```
-
-The API must be reachable from Streamlit’s servers (public HTTPS URL, or tunnel). **CORS** does not apply to server-side `httpx`; configure the API for browser clients separately.
-
-### `httpx.ConnectError` on Cloud
-
-Streamlit runs in the **cloud**, not on your PC. **`http://127.0.0.1:8000` or `localhost` will always fail** there: that address is the container itself, not your FastAPI process.
-
-**Fix:** deploy FastAPI (Railway, Render, Fly.io, Google Cloud Run, etc.), then set **`API_BASE_URL`** to that **`https://…`** base URL (no trailing slash). Confirm `GET {API_BASE_URL}/health` works in an incognito browser.
-
-The app now detects loopback URLs on Cloud and shows this guidance instead of a redacted stack trace.
-
-### Sidebar “API base URL override”
-
-If you have not set Secrets yet, paste your **public** FastAPI base URL into **API base URL override** in the sidebar. It overrides Secrets **for this browser session only** (good for quick tests). After changing **Secrets**, use **Reboot app**.
-
-## Example local secrets (do not commit)
+## Example `.streamlit/secrets.toml` (local, do not commit)
 
 ```toml
 API_BASE_URL = "http://127.0.0.1:8000"
 ```
 
-Place at `.streamlit/secrets.toml` in the working directory from which you run `streamlit run`, or use Streamlit’s documented secrets paths for your install.
+If you later deploy Streamlit or the API to the internet, both must use a **public** URL for the API; that is optional and not required for local development.

@@ -7,7 +7,6 @@ Related docs: [problem statement](doc/problemStratement.md), [architecture](doc/
 ## Repository layout
 
 ```
-render.yaml               # Render Blueprint — deploy FastAPI (public URL for Streamlit Cloud)
 doc/
 frontend/                 # Next.js UI (architecture §17.2) — see frontend/README.md
 streamlit_app/            # Streamlit UI (Phase 7) — see streamlit_app/README.md
@@ -65,36 +64,7 @@ Details: [`frontend/README.md`](frontend/README.md).
 
 1. Run the **API** (same as above).
 2. `pip install -r requirements-streamlit.txt`
-3. `streamlit run streamlit_app/app.py` — optional `API_BASE_URL` env or `.streamlit/secrets.toml` (see [`streamlit_app/README.md`](streamlit_app/README.md)).
-
-For **Streamlit Community Cloud**, point the main file at `streamlit_app/app.py` and requirements at `streamlit_app/requirements.txt`; set **`API_BASE_URL`** in app secrets to a **public** API URL.
-
-## Deploy API on [Render](https://render.com)
-
-Use a **Web Service** so Streamlit Cloud (or any client) can call `https://<your-service>.onrender.com`.
-
-### Option A — Blueprint (`render.yaml`)
-
-1. In the [Render Dashboard](https://dashboard.render.com), **New** → **Blueprint** → connect this Git repo.
-2. Render reads [`render.yaml`](render.yaml) at the repo root: install with `pip install .`, start **Uvicorn** on **`$PORT`**, health check **`/health`**, `SKIP_DATASET_LOAD=true`, Python **3.11.8**.
-3. After the first deploy, open **Environment** on the service and set **`GROQ_API_KEY`** (optional but needed for live Groq ranking). **Save** and let the service redeploy if prompted.
-4. Copy the service URL (e.g. `https://zomato-recommender-api.onrender.com`). Use it as **`API_BASE_URL`** in Streamlit Secrets (no trailing slash).
-
-### Option B — Web Service manually
-
-1. **New** → **Web Service** → connect the same GitHub repo. Root directory: **repo root** (where `pyproject.toml` lives).
-2. **Runtime:** Python. **Build command:**  
-   `pip install --upgrade pip setuptools wheel && pip install --no-cache-dir .`  
-   **Start command:**  
-   `uvicorn recommender.api.main:app --host 0.0.0.0 --port $PORT`
-3. **Environment** (minimum for a reliable free tier cold start):  
-   - `PYTHON_VERSION` = `3.11.8` (or another [supported](https://render.com/docs/python-version) 3.11.x)  
-   - `SKIP_DATASET_LOAD` = `true`  
-   - Optional: `GROQ_API_KEY`, `CORS_ORIGINS` (only if browsers call the API directly)
-4. **Health check path:** `/health`  
-5. Deploy, then verify **`https://<your-service>.onrender.com/health`** in a browser.
-
-Free web services **spin down** after idle; the first request may take ~30–60s. For production or Streamlit demos that must not time out on first hit, consider a paid instance or a keep-alive ping.
+3. `streamlit run streamlit_app/app.py` — defaults to `http://127.0.0.1:8000` (see [`streamlit_app/README.md`](streamlit_app/README.md)).
 
 ## Configuration
 
