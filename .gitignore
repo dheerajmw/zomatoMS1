@@ -1,5 +1,6 @@
 .env
 frontend/.env.local
+.streamlit/secrets.toml
 .venv/
 venv/
 __pycache__/

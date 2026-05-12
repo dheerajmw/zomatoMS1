@@ -1,0 +1,3 @@
+# Streamlit shell for POST /v1/recommendations (doc §16). Pin loosely with API stack.
+streamlit>=1.28.0,<2
+httpx>=0.27.0,<1

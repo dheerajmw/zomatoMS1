@@ -1,6 +1,6 @@
 # Zomato-inspired restaurant recommender
 
-Phases **0–6** are implemented in code; **Phase 7** (Streamlit) is specified in [architecture §16](doc/phase-wise-architecture.md#16-phase-7-streamlit-deployment). Backend map: [§17.1](doc/phase-wise-architecture.md#171-backend-python--fastapi); first-party web UI: [§17.2](doc/phase-wise-architecture.md#172-frontend-and-api-clients) in **`frontend/`** (Next.js).
+Phases **0–6** are implemented in code; **Phase 7** adds an optional **Streamlit** UI under `streamlit_app/` (see [architecture §16](doc/phase-wise-architecture.md#16-phase-7-streamlit-deployment)). Backend: [§17.1](doc/phase-wise-architecture.md#171-backend-python--fastapi); Next.js: [§17.2](doc/phase-wise-architecture.md#172-frontend-and-api-clients) in **`frontend/`**.
 
 Related docs: [problem statement](doc/problemStratement.md), [architecture](doc/phase-wise-architecture.md), [edge cases](doc/edge-cases.md).
 
@@ -9,6 +9,7 @@ Related docs: [problem statement](doc/problemStratement.md), [architecture](doc/
 ```
 doc/
 frontend/                 # Next.js UI (architecture §17.2) — see frontend/README.md
+streamlit_app/            # Streamlit UI (Phase 7) — see streamlit_app/README.md
 phase1/src/zomato_phase1/   # HF load, normalize, access (Phase 1)
 phase2/src/zomato_prefs/    # Raw request + validation (Phase 2)
 phase3/src/zomato_filter/   # Hard filters + pre-rank + cap (Phase 3)
@@ -58,6 +59,14 @@ python -m recommender
 2. From `frontend/`: `npm install && npm run dev` → [http://localhost:3000](http://localhost:3000).
 
 Details: [`frontend/README.md`](frontend/README.md).
+
+## Streamlit UI (`streamlit_app/`)
+
+1. Run the **API** (same as above).
+2. `pip install -r requirements-streamlit.txt`
+3. `streamlit run streamlit_app/app.py` — optional `API_BASE_URL` env or `.streamlit/secrets.toml` (see [`streamlit_app/README.md`](streamlit_app/README.md)).
+
+For **Streamlit Community Cloud**, point the main file at `streamlit_app/app.py` and requirements at `streamlit_app/requirements.txt`; set **`API_BASE_URL`** in app secrets to a **public** API URL.
 
 ## Configuration
 
