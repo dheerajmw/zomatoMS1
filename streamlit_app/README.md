@@ -36,6 +36,10 @@ Streamlit runs in the **cloud**, not on your PC. **`http://127.0.0.1:8000` or `l
 
 The app now detects loopback URLs on Cloud and shows this guidance instead of a redacted stack trace.
 
+### Sidebar “API base URL override”
+
+If you have not set Secrets yet, paste your **public** FastAPI base URL into **API base URL override** in the sidebar. It overrides Secrets **for this browser session only** (good for quick tests). After changing **Secrets**, use **Reboot app**.
+
 ## Example local secrets (do not commit)
 
 ```toml

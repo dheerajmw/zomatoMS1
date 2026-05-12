@@ -9,16 +9,21 @@ from urllib.parse import urlparse
 import httpx
 import streamlit as st
 
+SESSION_API_OVERRIDE = "api_base_url_override"
+
 
 def _likely_streamlit_cloud() -> bool:
-    """Heuristic: Community Cloud sets a public app URL on the server."""
+    """Guess Streamlit Community Cloud / hosted runtime (not your laptop)."""
     base = (os.environ.get("STREAMLIT_SERVER_BASE_URL") or "").lower()
     if "streamlit.app" in base:
         return True
-    if os.environ.get("STREAMLIT_COMMUNITY_CLOUD", "").lower() in ("1", "true", "yes"):
-        return True
-    if os.environ.get("STREAMLIT_CLOUD", "").lower() in ("1", "true", "yes"):
-        return True
+    for key in (
+        "STREAMLIT_COMMUNITY_CLOUD",
+        "STREAMLIT_CLOUD",
+        "STREAMLIT_SHARING_MODE",
+    ):
+        if os.environ.get(key, "").lower() in ("1", "true", "yes", "streamlit"):
+            return True
     return False
 
 
@@ -34,7 +39,14 @@ def _normalize_api_base(raw: str) -> str:
     return "https://" + u
 
 
-def _api_base() -> str:
+def _api_base() -> tuple[str, str]:
+    """Return (normalized URL, human-readable source)."""
+    override = ""
+    if SESSION_API_OVERRIDE in st.session_state:
+        override = str(st.session_state[SESSION_API_OVERRIDE] or "").strip()
+    if override:
+        return _normalize_api_base(override), "sidebar (this session only)"
+
     raw = ""
     try:
         v = st.secrets.get("API_BASE_URL")
@@ -42,11 +54,14 @@ def _api_base() -> str:
             raw = str(v).strip()
     except Exception:
         pass
-    if not raw:
-        raw = os.environ.get("API_BASE_URL", "").strip()
-    if not raw:
-        raw = "http://127.0.0.1:8000"
-    return _normalize_api_base(raw)
+    if raw:
+        return _normalize_api_base(raw), "Streamlit Secrets: API_BASE_URL"
+
+    env = os.environ.get("API_BASE_URL", "").strip()
+    if env:
+        return _normalize_api_base(env), "environment variable API_BASE_URL"
+
+    return _normalize_api_base("http://127.0.0.1:8000"), "default (local — does not work on Streamlit Cloud)"
 
 
 def _host_is_loopback(url: str) -> bool:
@@ -59,34 +74,36 @@ def _host_is_loopback(url: str) -> bool:
     return host in ("localhost", "127.0.0.1", "0.0.0.0", "::1")
 
 
-def _connection_help_markdown(api_display: str) -> str:
+def _connection_help_markdown(effective: str, source: str) -> str:
     cloud = _likely_streamlit_cloud()
-    loop = _host_is_loopback(api_display)
+    loop = _host_is_loopback(effective)
     lines = [
         "**Could not reach the API** (`httpx.ConnectError`). Common causes:",
         "",
-        "1. **Streamlit Cloud cannot use `localhost` / `127.0.0.1`.** "
-        "Those addresses refer to the Cloud container, not your laptop. "
-        "Deploy FastAPI to a **public HTTPS URL** (Railway, Render, Fly.io, Cloud Run, etc.) and set **`API_BASE_URL`** in **App settings → Secrets** to that base URL (no trailing slash).",
+        "1. **Streamlit Cloud cannot call `localhost` / `127.0.0.1`.** "
+        "That address is the Cloud machine itself, not your computer. "
+        "Deploy FastAPI to a **public HTTPS** host, then either:",
+        f"   - set **`API_BASE_URL`** in **☰ → Settings → Secrets** (recommended), **or**",
+        "   - paste the same URL into **“API base URL override”** in the sidebar (saved only for this browser session).",
         "",
-        "2. **Wrong or missing URL** — include scheme: `https://your-api.example.com` "
-        "(this app adds `https://` if you omit the scheme for non-local hosts).",
+        "2. **Use a full URL** — e.g. `https://your-service.onrender.com` (no trailing slash). "
+        "If you omit `https://`, this app adds it for non-local hosts.",
         "",
-        "3. **API not listening / firewall** — open `/health` on the same base URL in a browser to confirm.",
+        "3. **Confirm the API is up** — open `{}/health` in a new browser tab.".format(effective.rstrip("/")),
         "",
-        f"**Current base (from secrets/env):** `{api_display}`",
+        f"**Effective base URL:** `{effective}`",
+        f"**Source:** {source}",
     ]
     if cloud and loop:
         lines.insert(
             0,
-            ":red[**You are on Streamlit Community Cloud with a loopback API URL.**] "
-            "Set `API_BASE_URL` in Secrets to your **deployed** API.\n\n---\n\n",
+            ":red[**Hosted Streamlit + loopback API URL** — requests will fail until you use a public API URL (Secrets or sidebar).]\n\n---\n\n",
         )
     return "\n".join(lines)
 
 
 def _post_recommendations(payload: dict[str, Any]) -> tuple[int, Any]:
-    base = _api_base()
+    base, _src = _api_base()
     url = f"{base}/v1/recommendations"
     try:
         with httpx.Client(timeout=120.0, follow_redirects=True) as client:
@@ -108,27 +125,39 @@ st.set_page_config(
     page_title="Restaurant recommender",
     page_icon="🍽️",
     layout="centered",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
-api_base_display = _api_base()
-if _likely_streamlit_cloud() and _host_is_loopback(api_base_display):
-    st.error(_connection_help_markdown(api_base_display))
-    st.stop()
+# Sidebar first so `st.session_state[SESSION_API_OVERRIDE]` is current this run.
+with st.sidebar:
+    st.markdown("### API connection")
+    st.text_input(
+        "API base URL override",
+        key=SESSION_API_OVERRIDE,
+        placeholder="https://your-api.onrender.com",
+        help="Paste your **public** FastAPI base URL here for quick tests. "
+        "Overrides Secrets for this session only. For production, set `API_BASE_URL` in app Secrets.",
+    )
+    effective_base, source_label = _api_base()
+    st.caption("**Resolved base**")
+    st.code(effective_base, language="text")
+    st.caption(f"Source: {source_label}")
+    if _likely_streamlit_cloud():
+        st.info(
+            "On **Streamlit Cloud**: **☰ → Settings → Secrets** → add:\n\n"
+            "```toml\nAPI_BASE_URL = \"https://your-deployed-api.example.com\"\n```\n\n"
+            "Then **Save** and **Reboot app**."
+        )
+
+effective_base, source_label = _api_base()
+if _likely_streamlit_cloud() and _host_is_loopback(effective_base):
+    st.warning(_connection_help_markdown(effective_base, source_label))
 
 st.title("Restaurant recommender")
 st.caption(
     "Calls your FastAPI service at `POST /v1/recommendations`. "
-    "Set **API_BASE_URL** in Streamlit secrets or the environment."
+    "Configure the API URL in **Secrets** or the **sidebar** (see below)."
 )
-
-with st.sidebar:
-    st.markdown("**API base**")
-    st.code(api_base_display, language="text")
-    if _likely_streamlit_cloud():
-        st.warning("Cloud: use a **public** `https://…` API URL in Secrets, not localhost.")
-    else:
-        st.caption("Local default: `http://127.0.0.1:8000` — run Uvicorn from the repo root.")
 
 with st.form("prefs", clear_on_submit=False):
     c1, c2 = st.columns(2)
@@ -167,7 +196,8 @@ if submitted:
             if kind == "timeout":
                 st.error("The API did not respond in time. Try again or increase server capacity.")
             else:
-                st.markdown(_connection_help_markdown(_api_base()))
+                eff, src = _api_base()
+                st.markdown(_connection_help_markdown(eff, src))
         elif status == 200 and isinstance(body, dict):
             rid = body.get("request_id", "—")
             st.session_state["last_request_id"] = rid
