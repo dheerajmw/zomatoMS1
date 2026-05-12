@@ -19,3 +19,7 @@ data/hf_home/
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/tsconfig.tsbuildinfo
+
+# Local dataset cache under src/ (e.g. mistaken DATA_CACHE_PATH); do not commit parquet.
+src/data/
