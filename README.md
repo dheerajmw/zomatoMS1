@@ -34,7 +34,7 @@ python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install --upgrade pip setuptools wheel
 pip install -e ".[dev]"       # pulls datasets/pyarrow/pandas for Phase 1
-cp .env.example .env        # optional; defaults match .env.example
+cp .env.example .env        # optional; then edit secrets; keys mirror pydantic defaults where set
 ```
 
 **Run the API**
