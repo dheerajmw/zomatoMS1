@@ -34,14 +34,14 @@ streamlit run streamlit_app/Deployment.py
 
 Set **`FRONTEND_URL`** in Secrets or env to your deployed Next app (`https://…`), or `http://localhost:3000` when testing locally. Many sites send `X-Frame-Options` that block iframing; Vercel deployments often work for demos.
 
-The `.streamlit/` config folder was removed from the repo; Streamlit uses defaults unless you add `.streamlit/config.toml` locally.
+The `.streamlit/config.toml` at the **repo root** applies to **local** and **Streamlit Cloud** (same theme as localhost).
 
 ## Streamlit Community Cloud
 
 | Use case | Main file |
 |----------|-----------|
-| Recommendations only | `streamlit_app/app.py` |
-| Next iframe + API panel | `streamlit_app/Deployment.py` |
+| Same UI as local `app.py` | `streamlit_app/app.py` **or** `streamlit_app/Deployment.py` without `FRONTEND_URL` |
+| Next iframe + same form on the right | `streamlit_app/Deployment.py` **with** `FRONTEND_URL` in Secrets |
 
 **Requirements:** `streamlit_app/requirements.txt` (or root `requirements-streamlit.txt`).
 
@@ -49,7 +49,7 @@ The `.streamlit/` config folder was removed from the repo; Streamlit uses defaul
 
 - `USE_EMBEDDED_FASTAPI` — `true` (default if omitted) for embedded backend.
 - For HTTP-only mode: `USE_EMBEDDED_FASTAPI` = `false` and `API_BASE_URL` = `https://your-api…`
-- **`FRONTEND_URL`** — required for the iframe in `Deployment.py` (production Next URL or local URL when testing).
+- **`FRONTEND_URL`** — only for `Deployment.py` wide layout + Next iframe; omit it to match **`app.py`** on Cloud.
 - Mirror **`GROQ_API_KEY`**, **`SKIP_DATASET_LOAD`**, etc. in Secrets if Cloud cannot read repo `.env`.
 
 ## Example `.streamlit/secrets.toml` (local)
