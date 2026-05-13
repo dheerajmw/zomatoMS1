@@ -128,18 +128,16 @@ export default function Home() {
 
       <main className="mx-auto max-w-3xl px-4 pb-20 pt-9 md:pt-11">
         <section className="mb-11 md:mb-14" aria-labelledby="hero-heading">
-          <div className="rounded-card border border-white/10 bg-white/85 px-6 py-6 shadow-card backdrop-blur-sm md:px-7 md:py-7">
-            <h1
-              id="hero-heading"
-              className="text-[1.65rem] font-extrabold leading-[1.15] tracking-tight text-ink sm:text-3xl md:text-[2.125rem] md:leading-tight"
-            >
-              Find food you&apos;ll love — <span className="text-brand">fast &amp; simple</span>
-            </h1>
-            <p className="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-secondary md:text-lg md:leading-relaxed">
-              Tell us your city, budget, and cuisines. We rank restaurants with clear explanations — same flow as
-              discovery-first food apps, wired to your local API.
-            </p>
-          </div>
+          <h1
+            id="hero-heading"
+            className="text-[1.65rem] font-extrabold leading-[1.15] tracking-tight text-ink sm:text-3xl md:text-[2.125rem] md:leading-tight"
+          >
+            Find food you&apos;ll love — <span className="text-brand">fast &amp; simple</span>
+          </h1>
+          <p className="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-secondary md:text-lg md:leading-relaxed">
+            Tell us your city, budget, and cuisines. We rank restaurants with clear explanations — same flow as
+            discovery-first food apps, wired to your local API.
+          </p>
         </section>
 
         <section className="mb-11 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4" aria-label="Highlights">
