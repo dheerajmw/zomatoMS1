@@ -108,7 +108,11 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div
+      className="min-h-screen bg-surface bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url(/hero-bg.png)" }}
+    >
+      <div className="min-h-screen bg-white/85">
       <header className="sticky top-0 z-10 border-b border-zinc-200/80 bg-white shadow-[0_1px_0_rgba(0,0,0,0.03)]">
         <div className="mx-auto flex max-w-3xl items-center px-4 py-4 md:py-[1.125rem]">
           <div className="flex items-center gap-2.5">
@@ -363,6 +367,7 @@ export default function Home() {
           </span>
         </footer>
       </main>
+      </div>
     </div>
   );
 }
