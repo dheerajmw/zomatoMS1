@@ -72,9 +72,11 @@ Details: [`frontend/README.md`](frontend/README.md).
 
 ## Streamlit UI (`streamlit_app/`)
 
-1. Run the **API** (same as above).
-2. `pip install -r requirements-streamlit.txt`
-3. `streamlit run streamlit_app/app.py` — defaults to `http://127.0.0.1:8000` (see [`streamlit_app/README.md`](streamlit_app/README.md)).
+1. `pip install -r requirements-streamlit.txt` (from repo root).
+2. `streamlit run streamlit_app/app.py`
+3. **Default:** **embedded FastAPI** — recommendations run in-process (good for **Streamlit Cloud** without a second service). Turn off in the sidebar to use HTTP + Uvicorn on `http://127.0.0.1:8000`.
+
+Details: [`streamlit_app/README.md`](streamlit_app/README.md).
 
 ## Configuration
 
