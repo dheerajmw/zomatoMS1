@@ -10,8 +10,8 @@ const sans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Restaurant recommender",
-  description: "Zomato-inspired recommendations — architecture §17.2 UI",
+  title: "Discover — Restaurant recommender",
+  description: "Find food you'll love — fast & simple. Zomato-inspired recommendations.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

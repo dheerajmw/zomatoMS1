@@ -5,9 +5,9 @@ import { ApiError, parseValidationDetail, postRecommendations } from "@/lib/api"
 import type { RecommendationResponse } from "@/lib/types";
 
 const inputClass =
-  "mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-ink shadow-sm transition placeholder:text-ink-secondary/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
+  "mt-1.5 w-full rounded-xl border border-zinc-200/90 bg-white px-3.5 py-2.5 text-sm text-ink shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition placeholder:text-ink-secondary/55 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15";
 
-const labelClass = "block text-sm font-semibold text-ink";
+const labelClass = "block text-sm font-semibold tracking-tight text-ink";
 
 function ExperienceBanner({ experience, degraded }: { experience: string | null | undefined; degraded: boolean }) {
   const exp = experience ?? "ok";
@@ -109,42 +109,45 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <header className="sticky top-0 z-10 border-b border-zinc-200/90 bg-surface-card/95 shadow-sm backdrop-blur-sm">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-extrabold tracking-tight text-ink md:text-xl">
+      <header className="sticky top-0 z-10 border-b border-zinc-200/80 bg-white shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+        <div className="mx-auto flex max-w-3xl items-center px-4 py-4 md:py-[1.125rem]">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[1.125rem] font-extrabold tracking-tight text-ink md:text-xl">
               Discover<span className="text-brand">.</span>
             </span>
-            <span className="rounded-pill border border-brand/25 bg-brand-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand">
+            <span className="rounded-pill border border-brand/20 bg-brand-muted px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-brand">
               Demo
             </span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pb-16 pt-8 md:pt-10">
-        <section className="mb-10 md:mb-12" aria-labelledby="hero-heading">
-          <h1 id="hero-heading" className="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">
+      <main className="mx-auto max-w-3xl px-4 pb-20 pt-9 md:pt-11">
+        <section className="mb-11 md:mb-14" aria-labelledby="hero-heading">
+          <h1
+            id="hero-heading"
+            className="text-[1.65rem] font-extrabold leading-[1.15] tracking-tight text-ink sm:text-3xl md:text-[2.125rem] md:leading-tight"
+          >
             Find food you&apos;ll love — <span className="text-brand">fast &amp; simple</span>
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-secondary md:text-lg">
+          <p className="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-secondary md:text-lg md:leading-relaxed">
             Tell us your city, budget, and cuisines. We rank restaurants with clear explanations — same flow as
             discovery-first food apps, wired to your local API.
           </p>
         </section>
 
-        <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Highlights">
+        <section className="mb-11 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4" aria-label="Highlights">
           {[
-            { k: "1-step", title: "Your tastes", sub: "Location, budget, cuisines" },
-            { k: "2-step", title: "Smart match", sub: "Filters + ranking pipeline" },
-            { k: "3-step", title: "Ranked picks", sub: "Ratings & short reasons" },
+            { k: "1", title: "Your tastes", sub: "Location, budget, cuisines" },
+            { k: "2", title: "Smart match", sub: "Filters + ranking pipeline" },
+            { k: "3", title: "Ranked picks", sub: "Ratings & short reasons" },
           ].map((s) => (
             <div
               key={s.k}
-              className="rounded-card border border-zinc-100 bg-surface-card px-4 py-4 text-center shadow-card"
+              className="rounded-card border border-zinc-100 bg-white px-5 py-5 text-center shadow-card"
             >
-              <p className="text-xs font-bold uppercase tracking-wide text-brand">{s.title}</p>
-              <p className="mt-1 text-xs text-ink-secondary">{s.sub}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand">{s.title}</p>
+              <p className="mt-2 text-[13px] leading-snug text-ink-secondary">{s.sub}</p>
             </div>
           ))}
         </section>
@@ -153,14 +156,14 @@ export default function Home() {
           onSubmit={onSubmit}
           aria-label="Recommendation preferences"
           aria-busy={loading}
-          className="space-y-5 rounded-card border border-zinc-100 bg-surface-card p-6 shadow-card md:p-8"
+          className="space-y-6 rounded-card border border-zinc-100/90 bg-white p-6 shadow-preferences md:p-9"
         >
-          <div className="border-b border-zinc-100 pb-1">
-            <h2 className="text-lg font-bold text-ink">Preferences</h2>
+          <div className="border-b border-zinc-100 pb-4">
+            <h2 className="text-lg font-bold tracking-tight text-ink">Preferences</h2>
             <p className="mt-1 text-sm text-ink-secondary">One primary action: get recommendations.</p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label htmlFor="location" className={labelClass}>
                 Location
@@ -219,11 +222,11 @@ export default function Home() {
                 className={inputClass}
               />
               {cuisineChips.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2" aria-label="Cuisine chips">
+                <div className="mt-2.5 flex flex-wrap gap-2" aria-label="Cuisine chips">
                   {cuisineChips.map((c) => (
                     <span
                       key={c}
-                      className="rounded-pill border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-ink"
+                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-800"
                     >
                       {c}
                     </span>
@@ -231,7 +234,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <div>
+            <div className="sm:col-span-2 sm:max-w-[200px]">
               <label htmlFor="limit" className={labelClass}>
                 Top N
               </label>
@@ -264,13 +267,13 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-brand-foreground shadow-md transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[200px]"
+            className="w-full rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-brand-foreground shadow-[0_4px_14px_rgba(226,55,68,0.35)] transition hover:bg-brand-hover hover:shadow-[0_6px_20px_rgba(226,55,68,0.4)] focus:outline-none focus:ring-2 focus:ring-brand/35 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[220px]"
           >
             {loading ? "Finding picks…" : "Get recommendations"}
           </button>
         </form>
 
-        <div className="mt-10 space-y-4" aria-live="polite">
+        <div className="mt-11 space-y-4" aria-live="polite">
           {validationMsg && (
             <div
               role="alert"
@@ -291,7 +294,7 @@ export default function Home() {
             <>
               <ExperienceBanner experience={response.experience} degraded={response.degraded} />
               {response.messages.length > 0 && (
-                <details className="rounded-card border border-zinc-100 bg-surface-card p-4 text-sm text-ink-secondary shadow-card">
+                <details className="rounded-card border border-zinc-100 bg-white p-4 text-sm text-ink-secondary shadow-card">
                   <summary className="cursor-pointer font-semibold text-ink">Diagnostics</summary>
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {response.messages.map((m) => (
@@ -306,7 +309,7 @@ export default function Home() {
                   <ol className="space-y-4">
                     {response.results.map((r) => (
                       <li key={`${r.id}-${r.rank}`}>
-                        <article className="overflow-hidden rounded-card border border-zinc-100 bg-surface-card shadow-card transition hover:shadow-md">
+                        <article className="overflow-hidden rounded-card border border-zinc-100 bg-white shadow-card transition hover:shadow-md">
                           <div className="border-l-4 border-brand pl-5 pr-5 pt-5">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <h3 className="text-lg font-bold leading-snug text-ink md:text-xl">
@@ -349,7 +352,7 @@ export default function Home() {
           )}
         </div>
 
-        <footer className="mt-14 rounded-card border border-dashed border-zinc-200 bg-white/60 px-4 py-4 text-center text-xs text-ink-secondary">
+        <footer className="mt-16 rounded-card border border-dashed border-zinc-200/90 bg-white/70 px-4 py-4 text-center text-xs text-ink-secondary">
           <code className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px]">POST /v1/recommendations</code>
           <span className="mx-1.5 text-zinc-300">·</span>
           <code className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px]">{apiBaseDisplay}</code>

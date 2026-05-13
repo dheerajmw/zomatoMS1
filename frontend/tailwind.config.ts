@@ -25,7 +25,8 @@ const config: Config = {
         pill: "9999px",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)",
+        card: "0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.06)",
+        preferences: "0 1px 3px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.06)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "Segoe UI", "sans-serif"],
