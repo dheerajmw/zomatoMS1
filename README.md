@@ -73,8 +73,9 @@ Details: [`frontend/README.md`](frontend/README.md).
 ## Streamlit UI (`streamlit_app/`)
 
 1. `pip install -r requirements-streamlit.txt` (from repo root).
-2. `streamlit run streamlit_app/app.py`
-3. **Default:** **embedded FastAPI** — recommendations run in-process (good for **Streamlit Cloud** without a second service). Turn off in the sidebar to use HTTP + Uvicorn on `http://127.0.0.1:8000`.
+2. `streamlit run streamlit_app/app.py` — recommendations only.
+3. **`streamlit run streamlit_app/Deployment.py`** — Next.js (iframe) + Streamlit panel + embedded API (`FRONTEND_URL` in Secrets).
+4. **Default:** **embedded FastAPI** — recommendations run in-process (good for **Streamlit Cloud**). Turn off in the sidebar to use HTTP + Uvicorn.
 
 Details: [`streamlit_app/README.md`](streamlit_app/README.md).
 

@@ -24,14 +24,33 @@ streamlit run streamlit_app/app.py
 - **Embedded on (default):** ensure `.env` in repo root has `SKIP_DATASET_LOAD=false` (or unset) when you want real data; first load can download HF / write parquet cache.
 - **Embedded off:** start Uvicorn (`uvicorn recommender.api.main:app --host 127.0.0.1 --port 8000`), then uncheck embedded or set `API_BASE_URL`.
 
-## Streamlit Community Cloud (single deploy)
+## Full stack (Next.js iframe + embedded API)
 
-1. **Main file:** `streamlit_app/app.py`  
-2. **Requirements:** `streamlit_app/requirements.txt` (or root `requirements-streamlit.txt`)  
-3. **Secrets (optional):**
-   - `USE_EMBEDDED_FASTAPI` = `true` (default if omitted)  
-   - For HTTP-only mode: `USE_EMBEDDED_FASTAPI` = `false` and `API_BASE_URL` = `https://your-api...`  
-4. Add **`GROQ_API_KEY`**, **`SKIP_DATASET_LOAD`**, etc. in **Secrets** if your Cloud app cannot read repo `.env` (Streamlit often does not ship `.env`; mirror needed keys in Secrets or use Streamlit’s env UI).
+Single Streamlit page that embeds the **Next.js** UI (iframe) and a **Streamlit** recommendation panel sharing the same backend:
+
+```bash
+streamlit run streamlit_app/Deployment.py
+```
+
+Set **`FRONTEND_URL`** in Secrets or env to your deployed Next app (`https://…`), or `http://localhost:3000` when testing locally. Many sites send `X-Frame-Options` that block iframing; Vercel deployments often work for demos.
+
+The `.streamlit/` config folder was removed from the repo; Streamlit uses defaults unless you add `.streamlit/config.toml` locally.
+
+## Streamlit Community Cloud
+
+| Use case | Main file |
+|----------|-----------|
+| Recommendations only | `streamlit_app/app.py` |
+| Next iframe + API panel | `streamlit_app/Deployment.py` |
+
+**Requirements:** `streamlit_app/requirements.txt` (or root `requirements-streamlit.txt`).
+
+**Secrets (optional):**
+
+- `USE_EMBEDDED_FASTAPI` — `true` (default if omitted) for embedded backend.
+- For HTTP-only mode: `USE_EMBEDDED_FASTAPI` = `false` and `API_BASE_URL` = `https://your-api…`
+- **`FRONTEND_URL`** — required for the iframe in `Deployment.py` (production Next URL or local URL when testing).
+- Mirror **`GROQ_API_KEY`**, **`SKIP_DATASET_LOAD`**, etc. in Secrets if Cloud cannot read repo `.env`.
 
 ## Example `.streamlit/secrets.toml` (local)
 

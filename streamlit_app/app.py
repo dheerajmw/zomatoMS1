@@ -2,152 +2,37 @@
 
 from __future__ import annotations
 
-import asyncio
 import os
-import sys
-from pathlib import Path
 from typing import Any
 
-from urllib.parse import urlparse
-
-import httpx
 import streamlit as st
 
-
-def _ensure_repo_src_on_path() -> None:
-    """So `import recommender` works when the app is run from the repo (incl. Streamlit Cloud)."""
-    root = Path(__file__).resolve().parent.parent
-    for rel in (
-        "src",
-        "phase1/src",
-        "phase2/src",
-        "phase3/src",
-        "phase4/src",
-        "phase5/src",
-        "phase6/src",
-    ):
-        p = root / rel
-        if p.is_dir():
-            s = str(p)
-            if s not in sys.path:
-                sys.path.insert(0, s)
+from streamlit_shared import (
+    SESSION_API_OVERRIDE,
+    SESSION_USE_EMBEDDED,
+    connect_error_help,
+    initial_embedded_from_secrets,
+    post_recommendations,
+    resolve_api_base_url,
+)
 
 
-_ensure_repo_src_on_path()
-
-SESSION_API_OVERRIDE = "api_base_url_override"
-SESSION_USE_EMBEDDED = "use_embedded_fastapi"
-
-
-def _normalize_api_base(raw: str) -> str:
-    u = (raw or "").strip().rstrip("/")
-    if not u:
-        return "http://127.0.0.1:8000"
-    if u.startswith(("http://", "https://")):
-        return u
-    low = u.lower()
-    if low.startswith("localhost") or low.startswith("127.") or low.startswith("0.0.0.0") or low.startswith("[::1]"):
-        return "http://" + u
-    return "https://" + u
+def _secrets_str(key: str) -> str | None:
+    try:
+        return str(st.secrets[key]).strip()
+    except Exception:
+        return None
 
 
 def _api_base() -> str:
+    ov = ""
     if SESSION_API_OVERRIDE in st.session_state:
-        o = str(st.session_state[SESSION_API_OVERRIDE] or "").strip()
-        if o:
-            return _normalize_api_base(o)
-    try:
-        v = st.secrets.get("API_BASE_URL")
-        if v:
-            return _normalize_api_base(str(v).strip())
-    except Exception:
-        pass
-    env = os.environ.get("API_BASE_URL", "").strip()
-    if env:
-        return _normalize_api_base(env)
-    return "http://127.0.0.1:8000"
-
-
-def _host_is_loopback(url: str) -> bool:
-    try:
-        host = (urlparse(url).hostname or "").lower()
-    except Exception:
-        return False
-    return host in ("localhost", "127.0.0.1", "0.0.0.0", "::1")
-
-
-def _connect_error_help(base: str) -> str:
-    if _host_is_loopback(base):
-        return (
-            f"**Could not connect to `{base}`.**\n\n"
-            "**Quick fix:** In the sidebar, turn **ON** *Run API inside Streamlit (embedded)* — "
-            "the FastAPI app runs in this process (no Uvicorn). Repo layout: parent of `streamlit_app/` contains `pyproject.toml`.\n\n"
-            "**Or** run `uvicorn recommender.api.main:app --host 127.0.0.1 --port 8000` and turn embedded **OFF**."
-        )
-    return f"**Could not connect to `{base}`.** Check the URL or use embedded mode."
-
-
-async def _post_via_asgi_async(payload: dict[str, Any]) -> tuple[int, Any]:
-    _ensure_repo_src_on_path()
-    from recommender.api.main import app as asgi_app
-
-    transport = httpx.ASGITransport(app=asgi_app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://streamlit.embedded", timeout=180.0) as client:
-        r = await client.post(
-            "/v1/recommendations",
-            json=payload,
-            headers={"Accept": "application/json"},
-        )
-    try:
-        body = r.json()
-    except Exception:
-        body = {"raw": r.text[:2000]}
-    return r.status_code, body
-
-
-def _post_via_asgi(payload: dict[str, Any]) -> tuple[int, Any]:
-    try:
-        return asyncio.run(_post_via_asgi_async(payload))
-    except ImportError as e:
-        return -1, {"_error": "import", "detail": str(e)}
-    except RuntimeError as e:
-        if "asyncio.run()" in str(e) or "cannot be called from a running event loop" in str(e).lower():
-            return -1, {"_error": "async_loop", "detail": str(e)}
-        raise
-    except Exception as e:
-        return -1, {"_error": "asgi", "detail": str(e)}
-
-
-def _post_recommendations(payload: dict[str, Any]) -> tuple[int, Any]:
-    if st.session_state.get(SESSION_USE_EMBEDDED, True):
-        return _post_via_asgi(payload)
-
-    base = _api_base()
-    url = f"{base.rstrip('/')}/v1/recommendations"
-    try:
-        with httpx.Client(timeout=120.0, follow_redirects=True) as client:
-            r = client.post(url, json=payload, headers={"Accept": "application/json"})
-    except httpx.ConnectError:
-        return -1, {"_error": "connect"}
-    except httpx.TimeoutException:
-        return -1, {"_error": "timeout"}
-    except httpx.RequestError:
-        return -1, {"_error": "request"}
-    try:
-        body = r.json()
-    except Exception:
-        body = {"raw": r.text[:2000]}
-    return r.status_code, body
-
-
-def _initial_embedded() -> bool:
-    try:
-        v = st.secrets["USE_EMBEDDED_FASTAPI"]
-    except Exception:
-        return True
-    if isinstance(v, str):
-        return v.strip().lower() not in ("false", "0", "no", "")
-    return bool(v)
+        ov = str(st.session_state[SESSION_API_OVERRIDE] or "").strip()
+    return resolve_api_base_url(
+        sidebar_override=ov,
+        secrets_api_base=_secrets_str("API_BASE_URL"),
+        env_api_base=os.environ.get("API_BASE_URL", ""),
+    )
 
 
 st.set_page_config(
@@ -158,7 +43,7 @@ st.set_page_config(
 )
 
 if SESSION_USE_EMBEDDED not in st.session_state:
-    st.session_state[SESSION_USE_EMBEDDED] = _initial_embedded()
+    st.session_state[SESSION_USE_EMBEDDED] = initial_embedded_from_secrets(st.secrets)
 
 with st.sidebar:
     st.markdown("### API mode")
@@ -215,8 +100,9 @@ if submitted:
             "notes": notes.strip() or None,
             "limit": int(limit),
         }
+        embedded = bool(st.session_state.get(SESSION_USE_EMBEDDED, True))
         with st.spinner("Calling API…"):
-            status, body = _post_recommendations(payload)
+            status, body = post_recommendations(payload, embedded=embedded, api_base=_api_base())
 
         if status == -1:
             kind = isinstance(body, dict) and body.get("_error")
@@ -233,7 +119,7 @@ if submitted:
             elif kind in ("asgi",):
                 st.error(f"Embedded API error: `{body.get('detail', body)}`")
             else:
-                st.markdown(_connect_error_help(_api_base()))
+                st.markdown(connect_error_help(_api_base()))
         elif status == 200 and isinstance(body, dict):
             rid = body.get("request_id", "—")
             st.session_state["last_request_id"] = rid
